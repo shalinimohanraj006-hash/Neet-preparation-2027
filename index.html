@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>NEET 2027 Study System</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--accent:#2563eb;--danger:#dc2626;--good:#15803d;--warn:#b45309}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}
+.sidebar{width:245px;background:#101827;color:#fff;padding:18px;position:fixed;inset:0 auto 0 0;overflow:auto}.brand{font-weight:800;font-size:19px;margin-bottom:18px}.brand small{display:block;color:#9ca3af;font-size:11px;margin-top:3px}
+nav button{width:100%;text-align:left;background:transparent;color:#d1d5db;padding:11px 12px;border-radius:9px;margin:2px 0}nav button:hover,nav button.active{background:#1f2937;color:#fff}
+.main{margin-left:245px;width:calc(100% - 245px);padding:24px;max-width:1500px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.top h1{margin:0;font-size:25px}.pill{padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 8px #00000008}.metric .label{color:var(--muted);font-size:12px}.metric .value{font-size:25px;font-weight:800;margin-top:5px}.section{margin-top:18px}.section h2{font-size:16px;margin:0 0 10px}.muted{color:var(--muted)}.small{font-size:12px}.btn{background:var(--accent);color:#fff;padding:9px 12px;border-radius:9px;font-weight:700}.btn.secondary{background:#eef2ff;color:#1e40af}.btn.ghost{background:#f3f4f6;color:#374151}.btn.danger{background:#fee2e2;color:#991b1b}
+.progress{height:8px;background:#edf0f5;border-radius:99px;overflow:hidden}.progress>span{display:block;height:100%;background:var(--accent)}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-weight:600}
+form{display:grid;gap:10px}.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}label{font-size:12px;color:var(--muted);display:grid;gap:5px}input,select,textarea{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text)}textarea{min-height:90px}.actions{display:flex;gap:8px;flex-wrap:wrap}
+.badge{display:inline-block;padding:4px 7px;border-radius:999px;font-size:11px;background:#eef2ff;color:#3730a3}.badge.good{background:#dcfce7;color:#166534}.badge.warn{background:#fef3c7;color:#92400e}.badge.bad{background:#fee2e2;color:#991b1b}
+.task{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.task:last-child{border-bottom:0}.task .title{font-weight:650}.list{display:grid;gap:8px}.empty{padding:25px;text-align:center;color:var(--muted)}
+.timer{font-size:42px;font-weight:800;text-align:center;margin:12px}.bar{display:flex;height:220px;align-items:end;gap:8px}.bar i{display:block;flex:1;background:#2563eb;border-radius:5px 5px 0 0;min-height:3px}.barwrap{display:flex;gap:8px;align-items:end}.barlabel{font-size:10px;color:var(--muted);text-align:center}
+.toast{position:fixed;right:18px;bottom:18px;background:#111827;color:white;padding:11px 14px;border-radius:9px;display:none}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}.sidebar{width:205px}.main{margin-left:205px;width:calc(100% - 205px)}}
+@media(max-width:720px){.app{display:block}.sidebar{position:static;width:100%;padding:10px}.sidebar nav{display:flex;overflow:auto;gap:4px}.sidebar nav button{white-space:nowrap;width:auto}.main{margin:0;width:100%;padding:14px}.grid,.grid2,.row{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column}.metric .value{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">NEET 2027<span style="color:#60a5fa"> Study System</span><small>Adaptive personal study manager</small></div>
+  <nav id="nav"></nav>
+</aside>
+<main class="main">
+  <div class="top"><h1 id="pageTitle">Dashboard</h1><div class="pill" id="datePill"></div></div>
+  <div id="view"></div>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const STORAGE='neet2027-system-v1';
+const today=()=>new Date().toISOString().slice(0,10);
+const uid=()=>Math.random().toString(36).slice(2,10);
+const initialChapters=[
+['Physics','Units and Measurements',1],['Physics','Kinematics',2],['Physics','Laws of Motion',3],['Physics','Work, Energy and Power',3],['Physics','System of Particles and Rotational Motion',5],['Physics','Gravitation',4],['Physics','Properties of Bulk Matter',4],['Physics','Thermodynamics',4],['Physics','Oscillations',3],['Physics','Waves',3],['Physics','Electrostatics',4],['Physics','Current Electricity',4],['Physics','Moving Charges and Magnetism',5],['Physics','Electromagnetic Induction',4],['Physics','Alternating Current',4],['Physics','Electromagnetic Waves',2],['Physics','Ray Optics',4],['Physics','Wave Optics',3],['Physics','Dual Nature of Matter and Radiation',2],['Physics','Atoms and Nuclei',3],['Physics','Electronic Devices',3],
+['Chemistry','Some Basic Concepts of Chemistry',2],['Chemistry','Structure of Atom',2],['Chemistry','Classification of Elements and Periodicity',2],['Chemistry','Chemical Bonding and Molecular Structure',4],['Chemistry','Thermodynamics',4],['Chemistry','Equilibrium',5],['Chemistry','Redox Reactions',3],['Chemistry','Solutions',3],['Chemistry','Electrochemistry',4],['Chemistry','Chemical Kinetics',3],['Chemistry','Organic Chemistry: Basic Principles',5],['Chemistry','Hydrocarbons',3],['Chemistry','Haloalkanes and Haloarenes',3],['Chemistry','Alcohols, Phenols and Ethers',3],['Chemistry','Aldehydes, Ketones and Carboxylic Acids',4],['Chemistry','Amines',3],['Chemistry','Biomolecules',2],['Chemistry','Coordination Compounds',4],['Chemistry','d- and f-Block Elements',3],
+['Biology','The Living World',1],['Biology','Biological Classification',2],['Biology','Plant Kingdom',3],['Biology','Animal Kingdom',4],['Biology','Morphology of Flowering Plants',2],['Biology','Anatomy of Flowering Plants',2],['Biology','Structural Organisation in Animals',2],['Biology','Cell: The Unit of Life',4],['Biology','Biomolecules',3],['Biology','Cell Cycle and Cell Division',3],['Biology','Transport in Plants',2],['Biology','Mineral Nutrition',2],['Biology','Photosynthesis in Plants',3],['Biology','Respiration in Plants',3],['Biology','Plant Growth and Development',3],['Biology','Digestion and Absorption',2],['Biology','Breathing and Exchange of Gases',2],['Biology','Body Fluids and Circulation',3],['Biology','Excretory Products and Elimination',2],['Biology','Locomotion and Movement',2],['Biology','Neural Control and Coordination',4],['Biology','Chemical Coordination and Integration',3],['Biology','Reproduction',4],['Biology','Human Reproduction',3],['Biology','Reproductive Health',2],['Biology','Principles of Inheritance and Variation',5],['Biology','Molecular Basis of Inheritance',5],['Biology','Evolution',3],['Biology','Human Health and Disease',3],['Biology','Strategies for Enhancement in Food Production',2],['Biology','Microbes in Human Welfare',2],['Biology','Biotechnology: Principles and Processes',3],['Biology','Biotechnology and its Applications',3],['Biology','Organisms and Populations',3],['Biology','Ecosystem',3],['Biology','Biodiversity and Conservation',2]
+];
+const defaultData={
+profile:{exam:'NEET 2027',score:514,rank:'52,000+',dailyHours:12,targets:{Physics:3,Chemistry:3,Biology:5},sleep:'22:30',wake:'06:00',coaching:'',meals:''},
+chapters:initialChapters.map(([subject,name,difficulty],i)=>({id:'c'+i,subject,name,difficulty,status:'Not Started',hours:0,mcqTarget:subject==='Biology'?50:40,attempted:0,correct:0,incorrect:0,guessed:0,revision:[],testScore:null,notes:''})),
+sessions:[],errors:[],tests:[],tasks:[],materials:[],weekly:{},settings:{theme:'light'},currentView:'dashboard'
+};
+let data=JSON.parse(localStorage.getItem(STORAGE)||'null')||defaultData;
+function save(){localStorage.setItem(STORAGE,JSON.stringify(data))}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function toast(m){let e=document.getElementById('toast');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',2200)}
+function daysLeft(){let d=new Date('2027-05-02T00:00:00'),n=new Date();return Math.max(0,Math.ceil((d-n)/86400000))}
+function chaptersBy(s){return data.chapters.filter(c=>c.subject===s)}
+function accuracy(c){return c.attempted?Math.round(c.correct/c.attempted*100):0}
+function subjectStats(s){let a=chaptersBy(s);let att=a.reduce((x,c)=>x+c.attempted,0),cor=a.reduce((x,c)=>x+c.correct,0);return {att,cor,acc:att?Math.round(cor/att*100):0,done:a.filter(c=>c.status==='Completed').length}}
+function effectiveHours(){return data.sessions.filter(s=>s.date===today()).reduce((a,s)=>a+s.seconds/3600,0)}
+function weekStart(){let d=new Date();let day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d.toISOString().slice(0,10)}
+function weeklyDone(s){let a=chaptersBy(s);return a.filter(c=>c.status==='Completed'&&c.completedDate&&c.completedDate>=weekStart()).length}
+function nextTask(){
+  let due=data.errors.filter(e=>!e.resolved && e.reattemptDate<=today());
+  if(due.length)return {label:'Reattempt an error',detail:`${due.length} unresolved error(s) are due.`};
+  let weak=data.chapters.filter(c=>c.status==='Weak / Needs Rework').sort((a,b)=>b.difficulty-a.difficulty)[0];
+  if(weak)return {label:'Rework '+weak.name,detail:'Weak chapter has priority over new content.'};
+  let rev=data.chapters.find(c=>c.revision.some(r=>!r.done&&r.date<=today()));
+  if(rev)return {label:'Revision: '+rev.name,detail:'Spaced revision is due.'};
+  let s=chaptersBy('Chemistry').find(c=>c.status!=='Completed')||chaptersBy('Physics').find(c=>c.status!=='Completed')||chaptersBy('Biology').find(c=>c.status!=='Completed');
+  return s?{label:'Continue '+s.name,detail:s.subject+' • '+s.status}:{label:'Take a mixed test',detail:'Core chapter queue is complete.'};
+}
+function renderNav(){
+ const items=[['dashboard','Dashboard'],['today','Today'],['planner','Planner'],['roadmap','Roadmap'],['chapters','Chapters'],['mcq','MCQ Tracker'],['errors','Error Log'],['revision','Revision'],['tests','Test Center'],['analytics','Analytics'],['materials','Materials'],['calendar','Calendar'],['tutor','AI Tutor'],['settings','Settings']];
+ document.getElementById('nav').innerHTML=items.map(([id,n])=>`<button class="${data.currentView===id?'active':''}" onclick="go('${id}')">${n}</button>`).join('');
+}
+function go(v){data.currentView=v;save();render()}
+function render(){
+ renderNav();document.getElementById('datePill').textContent=new Date().toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+ document.getElementById('pageTitle').textContent=({dashboard:'Dashboard',today:"Today's Study",planner:'Study Planner',roadmap:'Syllabus / Roadmap',chapters:'Chapter Workspace',mcq:'MCQ Tracker',errors:'Error Log',revision:'Revision System',tests:'Test Center',analytics:'Progress Analytics',materials:'Study Materials',calendar:'Calendar',tutor:'AI Tutor',settings:'Settings'})[data.currentView];
+ document.getElementById('view').innerHTML=views[data.currentView]();
+}
+const views={
+dashboard(){
+ let next=nextTask(), h=effectiveHours(), p=subjectStats('Physics'),c=subjectStats('Chemistry'),b=subjectStats('Biology'), due=data.errors.filter(e=>!e.resolved&&e.reattemptDate<=today()).length;
+ let common=['Concept gap','Recall gap','Application gap','Calculation error','Question-reading error','Time-management error','Guessing error'].map(t=>[t,data.errors.filter(e=>e.type===t).length]).sort((a,b)=>b[1]-a[1])[0];
+ return `<div class="grid">
+ ${metric('Days to NEET',daysLeft())}${metric('Effective hours',h.toFixed(1)+' / '+data.profile.dailyHours)}${metric('MCQs today',data.sessions.filter(s=>s.date===today()&&s.type==='MCQ').reduce((a,s)=>a+(s.mcqs||0),0))}${metric('Latest test',data.tests.length?data.tests[data.tests.length-1].score+'%':'—')}
+ </div>
+ <div class="section grid2">
+ <div class="card"><h2>Do this next</h2><div style="font-size:19px;font-weight:800">${esc(next.label)}</div><p class="muted">${esc(next.detail)}</p><button class="btn" onclick="startTimer()">Start Study Session</button></div>
+ <div class="card"><h2>Weekly target</h2>${subjectRow('Physics',p.done,3)}${subjectRow('Chemistry',c.done,3)}${subjectRow('Biology',b.done,5)}</div></div>
+ <div class="section grid">
+ ${subjectCard('Physics',p)}${subjectCard('Chemistry',c)}${subjectCard('Biology',b)}
+ <div class="card"><div class="metric"><div class="label">Revision due</div><div class="value">${data.chapters.filter(c=>c.revision.some(r=>!r.done&&r.date<=today())).length}</div><div class="small muted">chapters</div></div></div>
+ </div>
+ <div class="section grid2"><div class="card"><h2>Backlog</h2><p>${data.tasks.filter(t=>!t.done&&t.due<today()).length} overdue task(s)</p><p class="muted">Preserve revision and MCQ practice before adding new work.</p></div><div class="card"><h2>Top recurring mistake</h2><p>${common[0]} <span class="badge">${common[1]}</span></p><p class="muted">Errors due today: ${due}</p></div></div>
+ <div class="section card"><h2>System status</h2><p class="muted">The planner uses weakness, chapter difficulty, revision due dates, backlog and weekly targets. It will not mark a chapter complete from lecture viewing alone.</p></div>`;
+},
+today(){
+ let due=data.chapters.filter(c=>c.revision.some(r=>!r.done&&r.date<=today())), unfinished=data.chapters.filter(c=>c.status!=='Completed').slice(0,6);
+ return `<div class="grid2"><div class="card"><h2>Study timer</h2><div id="timer" class="timer">00:00:00</div><div class="actions"><button class="btn" onclick="startTimer()">Start</button><button class="btn ghost" onclick="stopTimer()">Finish</button></div><p class="small muted">Paused time is excluded. Choose the subject/chapter in the session prompt.</p></div><div class="card"><h2>Today</h2><p><b>${effectiveHours().toFixed(1)} h</b> effective study logged.</p><p>Target: <b>${data.profile.dailyHours} h</b></p><div class="progress"><span style="width:${Math.min(100,effectiveHours()/data.profile.dailyHours*100)}%"></span></div></div></div>
+ <div class="section grid2"><div class="card"><h2>Revision due</h2>${due.length?due.map(c=>`<div class="task"><span>${esc(c.name)}</span><button class="btn secondary" onclick="quickRevision('${c.id}')">Review</button></div>`).join(''):'<div class="empty">No revision due today.</div>'}</div><div class="card"><h2>Suggested queue</h2>${unfinished.map(c=>`<div class="task"><span><b>${c.subject}</b> • ${esc(c.name)}</span><span class="badge">${esc(c.status)}</span></div>`).join('')}</div></div>`;
+},
+planner(){
+ let w=weekStart();
+ return `<div class="card"><h2>Adaptive weekly planner</h2><p class="muted">Default target: 3 Physics + 3 Chemistry + 5 Biology. Current week: ${w}</p>${['Physics','Chemistry','Biology'].map(s=>{let n=data.profile.targets[s], done=weeklyDone(s), list=chaptersBy(s).filter(c=>c.status!=='Completed').slice(0,n);return `<div class="section"><h2>${s} <span class="badge">${done}/${n}</span></h2>${list.map(c=>`<div class="task"><span>${esc(c.name)} <span class="small muted">difficulty ${c.difficulty}/5</span></span><button class="btn secondary" onclick="openChapter('${c.id}')">Open</button></div>`).join('')}</div>`}).join('')}
+ <div class="section card" style="background:#f9fafb"><b>Load check:</b> ${loadAssessment()}</div></div>`;
+},
+roadmap(){
+ return `<div class="card"><h2>Syllabus roadmap</h2><p class="muted">Edit statuses from Chapter Workspace. Initial list is editable and should be reconciled with your current official/coaching syllabus.</p>${['Physics','Chemistry','Biology'].map(s=>`<div class="section"><h2>${s}</h2><div class="progress"><span style="width:${chaptersBy(s).filter(c=>c.status==='Completed').length/chaptersBy(s).length*100}%"></span></div><p class="small muted">${chaptersBy(s).filter(c=>c.status==='Completed').length}/${chaptersBy(s).length} complete</p><table><tr><th>Chapter</th><th>Difficulty</th><th>Status</th><th>MCQ accuracy</th></tr>${chaptersBy(s).map(c=>`<tr><td>${esc(c.name)}</td><td>${c.difficulty}/5</td><td><span class="badge ${c.status==='Completed'?'good':c.status.includes('Weak')?'bad':'warn'}">${esc(c.status)}</span></td><td>${accuracy(c)}%</td></tr>`).join('')}</table></div>`).join('')}</div>`;
+},
+chapters(){
+ return `<div class="card"><div class="actions"><select id="chSubject" onchange="renderChapterList()"><option>All</option><option>Physics</option><option>Chemistry</option><option>Biology</option></select><input id="chSearch" placeholder="Search chapter" oninput="renderChapterList()"></div><div id="chapterList" class="section"></div></div>`;
+},
+mcq(){
+ return `<div class="grid2"><div class="card"><h2>Log MCQ batch</h2><form onsubmit="addMCQ(event)"><div class="row"><label>Chapter<select id="mqChapter">${data.chapters.map(c=>`<option value="${c.id}">${c.subject} — ${esc(c.name)}</option>`).join('')}</select></label><label>Attempted<input id="mqAttempt" type="number" min="0" required></label></div><div class="row"><label>Correct<input id="mqCorrect" type="number" min="0" required></label><label>Incorrect<input id="mqIncorrect" type="number" min="0" value="0"></label></div><label>Guessed<input id="mqGuessed" type="number" min="0" value="0"></label><button class="btn">Save MCQ batch</button></form></div><div class="card"><h2>Totals</h2>${['Physics','Chemistry','Biology'].map(s=>{let x=subjectStats(s);return subjectRow(s,x.att,x.att?x.att:1)+`<p class="small muted">Accuracy ${x.acc}%</p>`}).join('')}</div></div>
+ <div class="section card"><h2>Chapter performance</h2><table><tr><th>Subject</th><th>Chapter</th><th>Attempted</th><th>Correct</th><th>Accuracy</th></tr>${data.chapters.filter(c=>c.attempted).map(c=>`<tr><td>${c.subject}</td><td>${esc(c.name)}</td><td>${c.attempted}</td><td>${c.correct}</td><td>${accuracy(c)}%</td></tr>`).join('')}</table></div>`;
+},
+errors(){
+ return `<div class="grid2"><div class="card"><h2>Add error</h2><form onsubmit="addError(event)"><label>Question<textarea id="erQ" required></textarea></label><div class="row"><label>Subject<select id="erS"><option>Physics</option><option>Chemistry</option><option>Biology</option></select></label><label>Chapter<select id="erC">${data.chapters.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label></div><label>Error type<select id="erT">${['Concept gap','Recall gap','Application gap','Calculation error','Question-reading error','Time-management error','Guessing error'].map(x=>`<option>${x}</option>`).join('')}</select></label><label>Why<textarea id="erW"></textarea></label><label>Correct concept<textarea id="erA"></textarea></label><label>Reattempt date<input id="erD" type="date" value="${today()}"></label><button class="btn">Save error</button></form></div><div class="card"><h2>Recurring errors</h2>${['Concept gap','Recall gap','Application gap','Calculation error','Question-reading error','Time-management error','Guessing error'].map(t=>`<div class="task"><span>${t}</span><b>${data.errors.filter(e=>e.type===t).length}</b></div>`).join('')}</div></div>
+ <div class="section card"><h2>Error log</h2><table><tr><th>Date</th><th>Chapter</th><th>Type</th><th>Question</th><th>Due</th><th></th></tr>${data.errors.map((e,i)=>`<tr><td>${e.date}</td><td>${esc(data.chapters.find(c=>c.id===e.chapter)?.name||'')}</td><td>${esc(e.type)}</td><td>${esc(e.question).slice(0,80)}</td><td>${e.reattemptDate}</td><td><button class="btn secondary" onclick="resolveError(${i})">${e.resolved?'Resolved':'Resolve'}</button></td></tr>`).join('')}</table></div>`;
+},
+revision(){
+ let due=data.chapters.flatMap(c=>c.revision.map((r,i)=>({...r,cid:c.id,cname:c.name,i}))).sort((a,b)=>a.date.localeCompare(b.date));
+ return `<div class="card"><h2>Spaced revision queue</h2><p class="muted">R1 same day • R2 2–3 days • R3 7 days • R4 21–30 days • weekly cumulative review.</p>${due.length?due.map(r=>`<div class="task"><div><b>${esc(r.cname)}</b><div class="small muted">${r.type} • due ${r.date}</div></div><button class="btn ${r.done?'ghost':'secondary'}" onclick="completeRevision('${r.cid}',${r.i})">${r.done?'Done':'Complete'}</button></div>`).join(''):'<div class="empty">Revision entries appear when chapter completion is triggered.</div>'}</div>`;
+},
+tests(){
+ return `<div class="grid2"><div class="card"><h2>Log test result</h2><form onsubmit="addTest(event)"><div class="row"><label>Test name<input id="ttName" required></label><label>Score %<input id="ttScore" type="number" min="0" max="100" required></label></div><div class="row"><label>Physics marks<input id="ttP" type="number" value="0"></label><label>Chemistry marks<input id="ttC" type="number" value="0"></label></div><label>Biology marks<input id="ttB" type="number" value="0"></label><label>Error summary<textarea id="ttE"></textarea></label><button class="btn">Save test</button></form></div><div class="card"><h2>Test analysis</h2>${data.tests.length?(()=>{let t=data.tests[data.tests.length-1];return `<p><b>${esc(t.name)}</b> — ${t.score}%</p><p>${esc(t.errors||'No error summary')}</p>`})():'<div class="empty">No tests logged.</div>'}</div></div>
+ <div class="section card"><h2>History</h2><table><tr><th>Date</th><th>Test</th><th>Score</th><th>P/C/B</th></tr>${data.tests.map(t=>`<tr><td>${t.date}</td><td>${esc(t.name)}</td><td>${t.score}%</td><td>${t.p}/${t.c}/${t.b}</td></tr>`).join('')}</table></div>`;
+},
+analytics(){
+ let s=data.sessions.reduce((m,x)=>{m[x.date]=(m[x.date]||0)+x.seconds/3600;return m},{});
+ let days=Object.keys(s).sort().slice(-7);let max=Math.max(1,...days.map(d=>s[d]));
+ return `<div class="grid"><div class="card">${metric('7-day hours',days.reduce((a,d)=>a+s[d],0).toFixed(1))}</div><div class="card">${metric('30-day hours',data.sessions.filter(x=>new Date(x.date)>=new Date(Date.now()-30*86400000)).reduce((a,x)=>a+x.seconds/3600,0).toFixed(1))}</div><div class="card">${metric('MCQs',data.chapters.reduce((a,c)=>a+c.attempted,0))}</div><div class="card">${metric('Overall accuracy',(()=>{let a=data.chapters.reduce((x,c)=>x+c.attempted,0),b=data.chapters.reduce((x,c)=>x+c.correct,0);return a?Math.round(b/a*100)+'%':'—'})())}</div></div>
+ <div class="section grid2"><div class="card"><h2>Study hours — last 7 logged days</h2><div class="bar">${days.map(d=>`<div class="barwrap" style="flex:${1}"><div style="width:100%;height:${Math.max(4,s[d]/max*180)}px;background:#2563eb;border-radius:5px 5px 0 0"></div><div class="barlabel">${d.slice(5)}</div></div>`).join('')}</div></div><div class="card"><h2>Subject performance</h2>${['Physics','Chemistry','Biology'].map(s=>{let x=subjectStats(s);return `<div class="section"><b>${s}</b><div class="progress"><span style="width:${x.acc}%"></span></div><p class="small muted">${x.att} attempts • ${x.acc}% accuracy • ${x.done} completed</p></div>`}).join('')}</div></div>`;
+},
+materials(){
+ return `<div class="grid2"><div class="card"><h2>Add material reference</h2><form onsubmit="addMaterial(event)"><label>Name<input id="matN" required></label><label>Type<select id="matT"><option>PDF</option><option>Image</option><option>Notes</option><option>Question paper</option><option>Text</option></select></label><label>Chapter<select id="matC">${data.chapters.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label><label>Local file (metadata only)<input id="matF" type="file"></label><button class="btn">Save material</button></form><p class="small muted">This browser build stores material metadata locally. Full cloud upload/AI extraction requires a backend.</p></div><div class="card"><h2>Materials</h2>${data.materials.length?data.materials.map(m=>`<div class="task"><span><b>${esc(m.name)}</b><div class="small muted">${m.type} • ${esc(data.chapters.find(c=>c.id===m.chapter)?.name||'')}</div></span></div>`).join(''):'<div class="empty">No materials added.</div>'}</div></div>`;
+},
+calendar(){
+ let events=[];data.chapters.forEach(c=>c.revision.forEach(r=>events.push({date:r.date,title:'Revision: '+c.name})));data.tests.forEach(t=>events.push({date:t.date,title:'Test: '+t.name}));
+ return `<div class="card"><h2>Academic calendar</h2>${events.sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`<div class="task"><span>${esc(e.title)}</span><span class="badge">${e.date}</span></div>`).join('')||'<div class="empty">No scheduled events yet.</div>'}</div>`;
+},
+tutor(){
+ return `<div class="card"><h2>AI Tutor</h2><p class="muted">This local build includes a performance-aware tutoring interface. For live LLM responses, connect an API through a backend; never put a secret API key in browser code.</p><form onsubmit="askTutor(event)"><label>Your question<textarea id="tq" placeholder="e.g. I don't understand electrostatics." required></textarea></label><button class="btn">Ask tutor</button></form><div id="tutorAnswer" class="section"></div></div>`;
+},
+settings(){
+ return `<div class="card"><h2>Profile & settings</h2><form onsubmit="saveSettings(event)"><div class="row"><label>Daily target hours<input id="setH" type="number" min="1" max="12" value="${data.profile.dailyHours}"></label><label>Wake time<input id="setW" type="time" value="${data.profile.wake}"></label></div><div class="row"><label>Sleep time<input id="setS" type="time" value="${data.profile.sleep}"></label><label>Coaching hours<input id="setC" value="${esc(data.profile.coaching)}"></label></div><div class="row"><label>Physics weekly chapters<input id="setP" type="number" min="1" value="${data.profile.targets.Physics}"></label><label>Chemistry weekly chapters<input id="setCh" type="number" min="1" value="${data.profile.targets.Chemistry}"></label></div><label>Biology weekly chapters<input id="setB" type="number" min="1" value="${data.profile.targets.Biology}"></label><button class="btn">Save settings</button></form><div class="section actions"><button class="btn ghost" onclick="exportData()">Export data</button><button class="btn danger" onclick="resetData()">Reset all local data</button></div></div>`;
+}
+};
+function metric(l,v){return `<div class="card metric"><div class="label">${l}</div><div class="value">${v}</div></div>`}
+function subjectRow(s,d,t){return `<div class="task"><span>${s}</span><b>${d}/${t}</b></div><div class="progress"><span style="width:${Math.min(100,d/t*100)}%"></span></div>`}
+function subjectCard(s,x){return `<div class="card"><h2>${s}</h2><div class="metric"><div class="label">Accuracy</div><div class="value">${x.acc}%</div></div><p class="small muted">${x.att} MCQs • ${x.done} completed chapters</p><div class="progress"><span style="width:${x.acc}%"></span></div></div>`}
+function loadAssessment(){let total=data.profile.targets.Physics+data.profile.targets.Chemistry+data.profile.targets.Biology;let weeklyHours=total*3;return weeklyHours>40?'High load. Prioritise prerequisite-heavy chapters and protect revision/MCQs.':weeklyHours>30?'Aggressive but possible if chapters are moderate-sized and study quality remains stable.':'Manageable for most schedules.'}
+function renderChapterList(){let s=document.getElementById('chSubject')?.value||'All',q=(document.getElementById('chSearch')?.value||'').toLowerCase();let a=data.chapters.filter(c=>(s==='All'||c.subject===s)&&c.name.toLowerCase().includes(q));document.getElementById('chapterList').innerHTML=a.map(c=>`<div class="task"><div><b>${c.subject}</b> • ${esc(c.name)}<div class="small muted">${c.status} • difficulty ${c.difficulty}/5 • ${accuracy(c)}% MCQ accuracy</div></div><button class="btn secondary" onclick="openChapter('${c.id}')">Open</button></div>`).join('')||'<div class="empty">No chapters found.</div>'}
+function openChapter(id){let c=data.chapters.find(x=>x.id===id);data.currentView='chapters';render();setTimeout(()=>{document.getElementById('chapterList').innerHTML=chapterEditor(c)},0)}
+function chapterEditor(c){return `<div class="card"><h2>${esc(c.name)}</h2><p><span class="badge">${c.subject}</span> <span class="badge">Difficulty ${c.difficulty}/5</span></p><form onsubmit="saveChapter(event,'${c.id}')"><label>Status<select id="cs">${['Not Started','Learning','Practice','Revision Due','Test Pending','Completed','Weak / Needs Rework'].map(x=>`<option ${c.status===x?'selected':''}>${x}</option>`).join('')}</select></label><div class="row"><label>MCQ target<input id="ct" type="number" value="${c.mcqTarget}"></label><label>Study hours<input id="ch" type="number" step=".1" value="${c.hours}"></label></div><label>Notes<textarea id="cn">${esc(c.notes)}</textarea></label><button class="btn">Save chapter</button></form><div class="section"><h2>Completion checklist</h2>${['Learn concept','Read NCERT where applicable','Study examples','First MCQ set','Analyse mistakes','Reattempt mistakes','Revision 1','Revision 2','Chapter test','Final completion'].map((x,i)=>`<div class="task"><span>${x}</span><span class="badge ${i<3?'':'warn'}">${i<3?'Core':'Required'}</span></div>`).join('')}</div><div class="section"><h2>Performance</h2><p>${c.attempted} attempted • ${c.correct} correct • ${c.incorrect} incorrect • ${accuracy(c)}% accuracy</p></div></div>`}
+function saveChapter(e,id){e.preventDefault();let c=data.chapters.find(x=>x.id===id),old=c.status;c.status=document.getElementById('cs').value;c.mcqTarget=+document.getElementById('ct').value;c.hours=+document.getElementById('ch').value;c.notes=document.getElementById('cn').value;if(c.status==='Completed'&&old!=='Completed'){c.completedDate=today();let d=new Date();let dates=[['R1',0],['R2',2],['R3',7],['R4',28]].map(([type,n])=>{let x=new Date(d);x.setDate(x.getDate()+n);return {type,date:x.toISOString().slice(0,10),done:false}});c.revision=dates}save();toast('Chapter saved');render();setTimeout(renderChapterList,0)}
+function addMCQ(e){e.preventDefault();let c=data.chapters.find(x=>x.id===document.getElementById('mqChapter').value),a=+mqAttempt.value,cor=+mqCorrect.value,inc=+mqIncorrect.value,g=+mqGuessed.value;c.attempted+=a;c.correct+=cor;c.incorrect+=inc;c.guessed+=g;save();toast('MCQ batch saved');render()}
+function addError(e){e.preventDefault();data.errors.push({id:uid(),date:today(),question:erQ.value,chapter:erC.value,type:erT.value,why:erW.value,answer:erA.value,reattemptDate:erD.value,resolved:false});save();toast('Error added');render()}
+function resolveError(i){data.errors[i].resolved=!data.errors[i].resolved;save();render()}
+function completeRevision(id,i){let c=data.chapters.find(x=>x.id===id);if(c.revision[i])c.revision[i].done=true;save();render()}
+function quickRevision(id){let c=data.chapters.find(x=>x.id===id);toast('Revision started: '+c.name)}
+function addTest(e){e.preventDefault();data.tests.push({date:today(),name:ttName.value,score:+ttScore.value,p:+ttP.value,c:+ttC.value,b:+ttB.value,errors:ttE.value});save();toast('Test saved');render()}
+function addMaterial(e){e.preventDefault();data.materials.push({name:matN.value,type:matT.value,chapter:matC.value,file:matF.files[0]?.name||''});save();toast('Material reference saved');render()}
+function saveSettings(e){e.preventDefault();data.profile.dailyHours=+setH.value;data.profile.wake=setW.value;data.profile.sleep=setS.value;data.profile.coaching=setC.value;data.profile.targets.Physics=+setP.value;data.profile.targets.Chemistry=+setCh.value;data.profile.targets.Biology=+setB.value;save();toast('Settings saved');render()}
+function exportData(){let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='neet2027-study-data.json';a.click()}
+function resetData(){if(confirm('Reset all local study data?')){localStorage.removeItem(STORAGE);location.reload()}}
+let timer={running:false,start:0,elapsed:0,int:null};
+function startTimer(){if(timer.running)return;timer.running=true;timer.start=Date.now();timer.int=setInterval(updateTimer,1000);go('today')}
+function updateTimer(){let sec=Math.floor((timer.elapsed+(Date.now()-timer.start))/1000),e=document.getElementById('timer');if(e)e.textContent=new Date(sec*1000).toISOString().slice(11,19)}
+function stopTimer(){if(!timer.running)return;timer.elapsed+=Date.now()-timer.start;timer.running=false;clearInterval(timer.int);let seconds=Math.floor(timer.elapsed/1000);if(seconds>0){let type=prompt('Study type: Concept, NCERT, MCQ, Revision, Test, Error Analysis','Concept')||'Concept';let subject=prompt('Subject','Physics')||'Physics';data.sessions.push({date:today(),seconds,type,subject,mcqs:type==='MCQ'?+(prompt('How many MCQs completed?','0')||0):0});save()}timer={running:false,start:0,elapsed:0,int:null};render()}
+function askTutor(e){e.preventDefault();let q=tq.value.toLowerCase();let p=subjectStats('Physics'),c=subjectStats('Chemistry'),b=subjectStats('Biology');let weak=p.acc<=c.acc&&p.acc<=b.acc?'Physics':c.acc<=b.acc?'Chemistry':'Biology';let answer=`Based on your current tracker, your weakest subject by recorded MCQ accuracy is ${weak}. Your current accuracies are Physics ${p.acc}%, Chemistry ${c.acc}%, Biology ${b.acc}%. For "${esc(tq.value)}", start with the prerequisite concept, then solve a small guided set before moving to timed MCQs. If the problem is application rather than theory, do not rewatch the whole chapter; practise worked examples and analyse each error.`;document.getElementById('tutorAnswer').innerHTML=`<div class="card"><h2>Tutor guidance</h2><p>${answer}</p><p class="small muted">Live model responses require a secure backend/API connection; this demo deliberately does not expose API keys in the browser.</p></div>`}
+render();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
