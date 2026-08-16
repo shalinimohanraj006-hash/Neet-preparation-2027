@@ -1,0 +1,13 @@
+{
+  "name": "NEET 2027 Personal Study System",
+  "short_name": "NEET 2027",
+  "description": "Adaptive NEET 2027 study management system",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f7fb",
+  "theme_color": "#101827",
+  "prefer_related_applications": false,
+  "icons": []
+}
